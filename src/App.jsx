@@ -1,13 +1,15 @@
 import * as React from "react";
-import { Routes } from "./lib/render-routes";
+import { renderRoutes } from "react-router-config";
+
 import { Navbar } from "./features/navbar";
 import { Global } from "./global";
+import { routes } from "./lib/render-routes";
 
 export const App = () => (
   <Global>
     <div style={{ display: "flex" }}>
       <Navbar />
-      <Routes />
+      {renderRoutes(routes)}
     </div>
   </Global>
 );

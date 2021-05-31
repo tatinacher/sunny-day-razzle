@@ -4,11 +4,13 @@ import { Provider } from "react-redux";
 import express from "express";
 import { configureStore } from "@reduxjs/toolkit";
 import { renderToString } from "react-dom/server";
+import { matchRoutes } from "react-router-config";
 import { ServerStyleSheet } from "styled-components";
 
-import { cityReducer } from "./features/city";
+import { cityWeatherReducer, cityForecastReducer } from "./features/city";
 import { App } from "./App";
-import { url } from "./lib/initial-data";
+import { urls } from "./lib/initial-data";
+import { routes } from "./lib/render-routes";
 
 const fetch = require("node-fetch");
 
@@ -36,35 +38,45 @@ const jsScriptTagsFromAssets = (assets, entrypoint, extra = "") => {
     : "";
 };
 
-const createStore = (result) =>
+const createStoreWithState = (preloadedState) =>
   configureStore({
     reducer: {
-      city: cityReducer,
+      cityWeather: cityWeatherReducer,
+      cityForecast: cityForecastReducer,
     },
-    preloadedState: {
-      city: result,
-    },
+    preloadedState,
   });
 
 const server = express();
 server
   .disable("x-powered-by")
   .use(express.static(process.env.RAZZLE_PUBLIC_DIR))
-  .get("/", (req, res) => mainPage(req, res))
-  .get("/city/weather/:id", (req, res) => cityPage(req, res));
+  .get("/*", (req, res) => {
+    const branch = matchRoutes(routes, req.url);
+    const resUrls = [];
 
-export const cityPage = (req, res) =>
-  fetch(url(req.params.id))
-    .then((res) => res.json())
-    .then((result) => createStore(result))
-    .then((store) => createPage(req, store))
-    .then((render) => res.send(render));
+    branch.map(({ route, match }) => {
+      urls.map(({ key, value, store }) => {
+        if (key === route.path) {
+          resUrls.push({ url: value(match.params.id), store });
+        }
+      });
+    });
 
-export const mainPage = (req, res) => {
-  const store = createStore();
-  const render = createPage(req, store);
-  res.send(render);
-};
+    const promises = [];
+
+    resUrls.map(({ store, url }) => {
+      const promise = fetch(url)
+        .then((res) => res.json())
+        .then((data) => ({ [store]: data }));
+      promises.push(promise);
+    });
+
+    Promise.all(promises)
+      .then((states) => createStoreWithState(...states))
+      .then((store) => createPage(req, store))
+      .then((render) => res.send(render));
+  });
 
 const createPage = (req, store) => {
   const sheet = new ServerStyleSheet();

@@ -2,7 +2,7 @@ import * as React from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 
-import { citiesWeather } from "../lib/constants";
+import { citiesWeather, citiesForecast } from "../lib/constants";
 
 export const Navbar = () => (
   <Menu>
@@ -12,6 +12,11 @@ export const Navbar = () => (
     {citiesWeather.map(({ name, url }) => (
       <Link to={url} key={url}>
         {name}
+      </Link>
+    ))}
+    {citiesForecast.map(({ name, url }) => (
+      <Link to={url} key={url}>
+        forecast: {name}
       </Link>
     ))}
   </Menu>

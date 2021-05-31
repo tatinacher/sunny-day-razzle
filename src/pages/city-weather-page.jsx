@@ -3,19 +3,19 @@ import { useSelector, useDispatch } from "react-redux";
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
 
-import { fetchCity } from "../features/city";
+import { fetchCityWeather } from "../features/city";
 import { flags, units } from "../lib/constants";
 
 export const CityWeatherPage = () => {
   const { id } = useParams();
 
   const dispatch = useDispatch();
-  const city = useSelector((state) => state.city);
+  const city = useSelector((state) => state.cityWeather);
   const { name, weather, main, wind, sys } = city;
 
   React.useEffect(() => {
-    if (!city || id || !name || name.toLowerCase() !== id) {
-      dispatch(fetchCity(id));
+    if (!city || !name || name.toLowerCase() !== id) {
+      dispatch(fetchCityWeather(id));
     }
   }, [id]);
 

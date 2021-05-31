@@ -2,20 +2,19 @@ import * as React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
-// import dayjs from "dayjs";
 
-import { fetchCity } from "../features/city";
+import { fetchCityForecast } from "../features/city";
 import { flags, units } from "../lib/constants";
 
-export const CityPage = () => {
+export const CityForecastPage = () => {
   const { id } = useParams();
 
   const dispatch = useDispatch();
-  const { city, list } = useSelector((state) => state.city);
+  const { city, list } = useSelector((state) => state.cityForecast);
 
   React.useEffect(() => {
     if (!city || (id && name.toLowerCase() !== id)) {
-      dispatch(fetchCity(id));
+      dispatch(fetchCityForecast(id));
     }
   }, [id]);
 
